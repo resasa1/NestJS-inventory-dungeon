@@ -1,4 +1,4 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { CreateInventLogDto } from './create-invent-log.dto';
+import { CreateLogDto } from './create-invent-log.dto';
 
-export class UpdateInventLogDto extends PartialType(CreateInventLogDto) {}
+export class UpdateInventLogDto extends PartialType(CreateLogDto) {}

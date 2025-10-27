@@ -22,8 +22,21 @@ export class Item {
   @Column()
   name: string;
 
-  @Column()
-  
+  @Column({ type: 'text', nullable: true })
+  description: string;
 
+  @Column({ type: 'int', default: 0 })
+  quantity: number;
 
+  @OneToMany(() => InventoryLog, (log) => log.item)
+  logs: InventoryLog[];
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  @DeleteDateColumn()
+  deletedAt: Date;
 }

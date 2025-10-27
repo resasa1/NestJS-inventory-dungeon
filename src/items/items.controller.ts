@@ -1,34 +1,41 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { 
+  Controller, Get, Post, Body, 
+  Patch, Param, Delete, ParseIntPipe, Query
+} from '@nestjs/common';
 import { ItemsService } from './items.service';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
+import { PaginationDto } from '../pagination.dto';
 
-@Controller('items')
+@Controller('items') // Base URL: /items
 export class ItemsController {
   constructor(private readonly itemsService: ItemsService) {}
 
-  @Post()
+  @Post() // POST /items
   create(@Body() createItemDto: CreateItemDto) {
     return this.itemsService.create(createItemDto);
   }
 
-  @Get()
-  findAll() {
-    return this.itemsService.findAll();
+  @Get() // GET /items
+  findAll(@Query() paginationDto: PaginationDto) {
+    return this.itemsService.findAll(paginationDto);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.itemsService.findOne(+id);
+  @Get(':id') // GET /items/1
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.itemsService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateItemDto: UpdateItemDto) {
-    return this.itemsService.update(+id, updateItemDto);
+  @Patch(':id') // PATCH /items/1
+  update(
+    @Param('id', ParseIntPipe) id: number, 
+    @Body() updateItemDto: UpdateItemDto
+  ) {
+    return this.itemsService.update(id, updateItemDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.itemsService.remove(+id);
+  @Delete(':id') // DELETE /items/1
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.itemsService.remove(id);
   }
 }

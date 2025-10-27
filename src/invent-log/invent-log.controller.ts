@@ -1,34 +1,29 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { InventLogService } from './invent-log.service';
-import { CreateInventLogDto } from './dto/create-invent-log.dto';
-import { UpdateInventLogDto } from './dto/update-invent-log.dto';
+import { 
+  Controller, Get, Post, Body, 
+  Param, ParseIntPipe, Query 
+} from '@nestjs/common';
+import { InventoryLogsService } from './invent-log.service';
+import { CreateLogDto } from './dto/create-invent-log.dto';
+import { PaginationDto } from '../pagination.dto';
 
-@Controller('invent-log')
-export class InventLogController {
-  constructor(private readonly inventLogService: InventLogService) {}
+@Controller('inventory-logs')
+export class InventoryLogsController {
+  constructor(private readonly inventoryLogsService: InventoryLogsService) {}
 
-  @Post()
-  create(@Body() createInventLogDto: CreateInventLogDto) {
-    return this.inventLogService.create(createInventLogDto);
+  @Post() // POST /inventory-logs
+  create(@Body() createLogDto: CreateLogDto) {
+    return this.inventoryLogsService.createLog(createLogDto);
   }
 
-  @Get()
-  findAll() {
-    return this.inventLogService.findAll();
+  @Get() // GET /inventory-logs?page=1&limit=10
+  findAll(@Query() paginationDto: PaginationDto) {
+    return this.inventoryLogsService.findAll(paginationDto);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.inventLogService.findOne(+id);
+  @Get(':id') // GET /inventory-logs/1
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.inventoryLogsService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateInventLogDto: UpdateInventLogDto) {
-    return this.inventLogService.update(+id, updateInventLogDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.inventLogService.remove(+id);
-  }
+  // Kita tidak menyediakan endpoint PATCH atau DELETE untuk log.
 }

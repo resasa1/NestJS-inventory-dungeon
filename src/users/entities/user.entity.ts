@@ -1,14 +1,14 @@
 import { InventoryLog } from '../../invent-log/entities/invent-log.entity';
-import { 
-    Entity,
-    PrimaryGeneratedColumn,
-    Column,
-    CreateDateColumn,
-    UpdateDateColumn,
-    DeleteDateColumn,
-    OneToMany,
-    Index
- } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  DeleteDateColumn,
+  OneToMany,
+  Index,
+} from 'typeorm';
 
 @Entity()
 export class User {
