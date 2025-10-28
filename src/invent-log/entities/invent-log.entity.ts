@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { User } from '../../users/entities/user.entity';
 import { Item } from '../../items/entities/item.entity';
 import {
@@ -5,7 +6,6 @@ import {
     PrimaryGeneratedColumn,
     Column,
     CreateDateColumn,
-    UpdateDateColumn,
     DeleteDateColumn,
     ManyToOne,
     JoinColumn

@@ -10,20 +10,18 @@ import { PaginationDto } from '../pagination.dto';
 export class InventoryLogsController {
   constructor(private readonly inventoryLogsService: InventoryLogsService) {}
 
-  @Post() // POST /inventory-logs
+  @Post()
   create(@Body() createLogDto: CreateLogDto) {
     return this.inventoryLogsService.createLog(createLogDto);
   }
 
-  @Get() // GET /inventory-logs?page=1&limit=10
+  @Get()
   findAll(@Query() paginationDto: PaginationDto) {
     return this.inventoryLogsService.findAll(paginationDto);
   }
 
-  @Get(':id') // GET /inventory-logs/1
+  @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.inventoryLogsService.findOne(id);
   }
-
-  // Kita tidak menyediakan endpoint PATCH atau DELETE untuk log.
 }

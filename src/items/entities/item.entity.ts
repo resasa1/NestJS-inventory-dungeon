@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { InventoryLog } from '../../invent-log/entities/invent-log.entity';
 import {
     Entity,
