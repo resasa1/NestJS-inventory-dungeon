@@ -5,7 +5,6 @@ import { PaginationDto } from '../pagination.dto';
 import { CreateLogDto } from './dto/create-invent-log.dto';
 import { LogType } from './entities/invent-log.entity';
 
-// 1. Buat tiruan (mock) dari InventoryLogsService
 const mockInventoryLogsService = {
   createLog: jest.fn(),
   findAll: jest.fn(),
@@ -21,8 +20,8 @@ describe('InventoryLogsController', () => {
       controllers: [InventoryLogsController],
       providers: [
         {
-          provide: InventoryLogsService, // Saat Nest mencari InventoryLogsService...
-          useValue: mockInventoryLogsService, // ...berikan objek tiruan kita
+          provide: InventoryLogsService,
+          useValue: mockInventoryLogsService,
         },
       ],
     }).compile();
@@ -51,7 +50,6 @@ describe('InventoryLogsController', () => {
       };
       const expectedResult = { id: 1, ...createDto };
 
-      // Atur tiruan
       mockInventoryLogsService.createLog.mockResolvedValue(expectedResult);
       const result = await controller.create(createDto);
 

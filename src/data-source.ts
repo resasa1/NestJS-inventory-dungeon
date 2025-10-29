@@ -1,4 +1,4 @@
-import 'dotenv/config'; // Muat .env
+import 'dotenv/config';
 import { DataSource } from 'typeorm';
 
 export const AppDataSource = new DataSource({

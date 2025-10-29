@@ -6,6 +6,7 @@ import { Item } from '../items/entities/item.entity';
 import { User } from '../users/entities/user.entity';
 import { CreateLogDto } from './dto/create-invent-log.dto';
 import { PaginationDto } from '../pagination.dto';
+import { PlayerInventory } from '../player-inventory/entities/player-inventory.entity';
 
 @Injectable()
 export class InventoryLogsService {
@@ -16,23 +17,15 @@ export class InventoryLogsService {
     private itemsRepository: Repository<Item>,
     @InjectRepository(User)
     private usersRepository: Repository<User>,
-
-    // Kita inject DataSource untuk menggunakan Transaksi
+    @InjectRepository(PlayerInventory)
+    private inventoryRepository: Repository<PlayerInventory>,
     private dataSource: DataSource,
   ) {}
 
-  /**
-   * Endpoint utama: Membuat log baru DAN mengupdate stok item.
-   * Dijalankan dalam satu transaksi database.
-   */
   async createLog(createLogDto: CreateLogDto) {
     const { itemId, userId, type, quantity, reason } = createLogDto;
 
-    // Kita gunakan 'this.dataSource.transaction'
-    // Ini memastikan semua operasi di dalamnya berhasil,
-    // atau semuanya akan di-rollback jika ada satu error.
     return this.dataSource.transaction(async (transactionalEntityManager) => {
-      // 1. Validasi: Cek apakah User dan Item ada
       const user = await transactionalEntityManager.findOneBy(User, { id: userId });
       if (!user) {
         throw new NotFoundException(`User with ID ${userId} not found`);
@@ -43,26 +36,50 @@ export class InventoryLogsService {
         throw new NotFoundException(`Item with ID ${itemId} not found`);
       }
 
-      // 2. Logika Bisnis: Hitung stok baru
-      let newQuantity = item.quantity;
+      let playerInventoryItem = await transactionalEntityManager.findOne(PlayerInventory, {
+        where: {
+          user: { id: userId },
+          item: { id: itemId },
+        },
+      });
+
+      let currentQuantity = playerInventoryItem ? playerInventoryItem.quantity : 0;
+      let newQuantity = currentQuantity;
       let quantityChanged = 0;
 
       if (type === LogType.IN) {
         newQuantity += quantity;
-        quantityChanged = +quantity; // +10
+        quantityChanged = +quantity;
       } else if (type === LogType.OUT) {
-        if (item.quantity < quantity) {
-          throw new BadRequestException(`Not enough stock for item ${item.name}`);
+        if (currentQuantity < quantity) {
+          throw new BadRequestException(`Not enough ${item.name} in inventory.`);
         }
         newQuantity -= quantity;
-        quantityChanged = -quantity; // -10
+        quantityChanged = -quantity;
       } else if (type === LogType.ADJUSTMENT) {
-        // Untuk adjustment, 'quantity' adalah stok final
-        quantityChanged = quantity - item.quantity;
+        quantityChanged = quantity - currentQuantity;
         newQuantity = quantity;
       }
 
-      // 3. Simpan Log
+      if (playerInventoryItem) {
+        if (newQuantity > 0) {
+          await transactionalEntityManager.update(PlayerInventory, playerInventoryItem.id, {
+            quantity: newQuantity,
+          });
+        } else {
+          await transactionalEntityManager.remove(PlayerInventory, playerInventoryItem);
+        }
+      } else if (newQuantity > 0) {
+        playerInventoryItem = transactionalEntityManager.create(PlayerInventory, {
+          user: user,
+          item: item,
+          quantity: newQuantity,
+        });
+        await transactionalEntityManager.save(playerInventoryItem);
+      } else if (newQuantity < 0) {
+         throw new BadRequestException(`Cannot take ${item.name} which does not exist in inventory.`);
+      }
+      
       const newLog = transactionalEntityManager.create(InventoryLog, {
         item: item,
         user: user,
@@ -72,18 +89,10 @@ export class InventoryLogsService {
       });
       await transactionalEntityManager.save(newLog);
 
-      // 4. Update Kuantitas Item
-      await transactionalEntityManager.update(Item, item.id, {
-        quantity: newQuantity,
-      });
-
       return newLog;
     });
   }
 
-  /**
-   * Endpoint Read: Mendapatkan riwayat log dengan pagination
-   */
   async findAll(paginationDto: PaginationDto) {
     const { page, limit } = paginationDto;
     const skip = (page - 1) * limit;
@@ -92,16 +101,14 @@ export class InventoryLogsService {
       take: limit,
       skip: skip,
       order: {
-        createdAt: 'DESC', // Tampilkan log terbaru dulu
+        createdAt: 'DESC',
       },
-      // 'relations' otomatis join tabel item dan user
-      relations: ['item', 'user'], 
+      relations: ['item', 'user'],
     });
 
     return {
-      data: data.map(log => ({ // Kita format responsnya
+      data: data.map(log => ({
         ...log,
-        // Hapus password user dari data log
         user: log.user ? { id: log.user.id, name: log.user.name, email: log.user.email } : null,
       })),
       total,
@@ -111,9 +118,6 @@ export class InventoryLogsService {
     };
   }
 
-  /**
-   * Endpoint Read: Mendapatkan satu log spesifik
-   */
   async findOne(id: number) {
     const log = await this.logsRepository.findOne({
       where: { id },
@@ -124,7 +128,6 @@ export class InventoryLogsService {
       throw new NotFoundException(`Log with ID ${id} not found`);
     }
 
-    // Hapus password user dari respons
     const { password, ...userWithoutPassword } = log.user || {};
     
     return {
@@ -132,7 +135,4 @@ export class InventoryLogsService {
       user: log.user ? userWithoutPassword : null,
     };
   }
-
-  // CATATAN: Kita sengaja TIDAK membuat method update() atau remove()
-  // untuk log. Riwayat (log) seharusnya 'immutable' (tidak bisa diubah).
 }

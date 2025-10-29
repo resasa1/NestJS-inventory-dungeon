@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { ItemsModule } from './items/items.module';
 import { InventLogModule } from './invent-log/invent-log.module';
+import { PlayerInventoryModule } from './player-inventory/player-inventory.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { InventLogModule } from './invent-log/invent-log.module';
     UsersModule,
     ItemsModule,
     InventLogModule,
+    PlayerInventoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

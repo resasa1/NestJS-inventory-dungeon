@@ -1,4 +1,5 @@
 import { InventoryLog } from '../../invent-log/entities/invent-log.entity';
+import { PlayerInventory } from '../../player-inventory/entities/player-inventory.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -27,6 +28,9 @@ export class User {
 
   @OneToMany(() => InventoryLog, (log) => log.user)
   logs: InventoryLog[];
+
+  @OneToMany(() => PlayerInventory, (inventory) => inventory.user)
+  inventory: PlayerInventory[];
 
   @CreateDateColumn()
   createdAt: Date;

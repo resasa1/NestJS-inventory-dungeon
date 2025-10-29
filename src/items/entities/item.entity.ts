@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { InventoryLog } from '../../invent-log/entities/invent-log.entity';
+import { PlayerInventory } from '../../player-inventory/entities/player-inventory.entity';
 import {
     Entity,
     PrimaryGeneratedColumn,
@@ -26,11 +27,11 @@ export class Item {
   @Column({ type: 'text', nullable: true })
   description: string;
 
-  @Column({ type: 'int', default: 0 })
-  quantity: number;
-
   @OneToMany(() => InventoryLog, (log) => log.item)
   logs: InventoryLog[];
+
+  @OneToMany(() => PlayerInventory, (inventory) => inventory.item)
+  inventory: PlayerInventory[];
 
   @CreateDateColumn()
   createdAt: Date;
