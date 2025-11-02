@@ -1,4 +1,4 @@
-import { IsOptional, IsInt, Min, Max } from 'class-validator';
+import { IsOptional, IsInt, Min, Max, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class PaginationDto {
@@ -13,5 +13,9 @@ export class PaginationDto {
   @IsInt()
   @Min(1)
   @Max(100) // Batasi limit maks 100 per request
-  limit: number = 10; // Default limit 10 jika tidak disediakan
+  limit: number = 12;
+
+  @IsOptional()
+  @IsString()
+  search?: string;
 }

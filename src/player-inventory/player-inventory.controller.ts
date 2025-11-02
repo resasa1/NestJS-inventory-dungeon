@@ -1,34 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, ParseIntPipe } from '@nestjs/common';
 import { PlayerInventoryService } from './player-inventory.service';
-import { CreatePlayerInventoryDto } from './dto/create-player-inventory.dto';
-import { UpdatePlayerInventoryDto } from './dto/update-player-inventory.dto';
+import { CreateLogDto } from '../invent-log/dto/create-invent-log.dto';
 
-@Controller('player-inventory')
+@Controller('inventory')
 export class PlayerInventoryController {
-  constructor(private readonly playerInventoryService: PlayerInventoryService) {}
+  constructor(private readonly inventoryService: PlayerInventoryService) {}
 
-  @Post()
-  create(@Body() createPlayerInventoryDto: CreatePlayerInventoryDto) {
-    return this.playerInventoryService.create(createPlayerInventoryDto);
+  @Get('user/:userId')
+  findInventoryForUser(@Param('userId', ParseIntPipe) userId: number) {
+    return this.inventoryService.findInventoryForUser(userId);
   }
 
-  @Get()
-  findAll() {
-    return this.playerInventoryService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.playerInventoryService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePlayerInventoryDto: UpdatePlayerInventoryDto) {
-    return this.playerInventoryService.update(+id, updatePlayerInventoryDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.playerInventoryService.remove(+id);
+  @Post('loot')
+  lootItem(@Body() createLogDto: CreateLogDto) {
+    return this.inventoryService.handleItemChange(createLogDto);
   }
 }
